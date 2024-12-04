@@ -1,8 +1,5 @@
--- 既存のテーブルをバックアップ
-ALTER TABLE mapchips RENAME TO mapchips_old;
-
--- 新しいテーブルを作成
-CREATE TABLE mapchips (
+-- マップチップ用のテーブルを作成
+CREATE TABLE IF NOT EXISTS mapchips (
     id TEXT PRIMARY KEY,
     filename TEXT NOT NULL,
     size INTEGER NOT NULL CHECK (size IN (16, 32, 64)),
@@ -12,10 +9,11 @@ CREATE TABLE mapchips (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 既存のデータを新しいテーブルにコピー（カテゴリーはデフォルト値を設定）
-INSERT INTO mapchips (id, filename, size, category, tags, flags, created_at)
-SELECT id, filename, size, 'mapchip' as category, tags, flags, created_at
-FROM mapchips_old;
-
--- バックアップテーブルを削除
-DROP TABLE mapchips_old;
+-- 音声ファイル用のテーブルを作成
+CREATE TABLE IF NOT EXISTS sound_files (
+    id TEXT PRIMARY KEY,
+    filename TEXT NOT NULL,
+    category TEXT NOT NULL CHECK (category IN ('bgm', 'se', 'voice', 'ambient')),
+    tags TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
