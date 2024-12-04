@@ -1,0 +1,16 @@
+name = "rpg-mapchip-manager"
+main = "src/index.ts"
+compatibility_date = "2024-12-04"
+
+# D1データベースのバインディング
+[[d1_databases]]
+binding = "DB"
+database_name = "rpg-mapchips-db"
+database_id = "39a9ae49-1901-49e6-8d72-8315180d5061"
+preview_database_id = "ff21eafe-26cb-4538-b664-92c5016fa7ec" # 開発用DB ID
+
+# R2バケットのバインディング
+[[r2_buckets]]
+binding = "MAPCHIPS"
+bucket_name = "rpg-mapchips"
+preview_bucket_name = "rpg-mapchips-dev" # 開発用バケット名

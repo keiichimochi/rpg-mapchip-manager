@@ -1,0 +1,18 @@
+{
+  "name": "rpg-mapchip-manager",
+  "version": "1.0.0",
+  "description": "RPG Map Chip Manager",
+  "main": "src/index.ts",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
+  },
+  "dependencies": {
+    "itty-router": "^3.0.12"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20231121.0",
+    "typescript": "^5.0.0",
+    "wrangler": "^3.0.0"
+  }
+}
