@@ -30,6 +30,17 @@ export const uploadPageHtml = `<!DOCTYPE html>
           </select>
         </div>
         <div>
+          <label class="block mb-2">カテゴリー:</label>
+          <select name="category" required class="w-full p-2 border rounded">
+            <option value="character">キャラクター</option>
+            <option value="mapchip">マップチップ</option>
+            <option value="monster">モンスター</option>
+            <option value="item">アイテム</option>
+            <option value="effect">エフェクト</option>
+            <option value="ui">UI素材</option>
+          </select>
+        </div>
+        <div>
           <label class="block mb-2">タグ (カンマ区切り):</label>
           <input type="text" name="tags" class="w-full p-2 border rounded" placeholder="草原,森,通行可能">
         </div>

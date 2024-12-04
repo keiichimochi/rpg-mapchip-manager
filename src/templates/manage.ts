@@ -36,6 +36,15 @@ export const managePageHtml = `<!DOCTYPE html>
       <h2 class="text-xl font-semibold mb-4">フィルター</h2>
       <div class="flex space-x-4">
         <input type="text" id="searchTag" placeholder="タグで検索" class="flex-1 p-2 border rounded">
+        <select id="searchCategory" class="p-2 border rounded">
+          <option value="">全てのカテゴリー</option>
+          <option value="character">キャラクター</option>
+          <option value="mapchip">マップチップ</option>
+          <option value="monster">モンスター</option>
+          <option value="item">アイテム</option>
+          <option value="effect">エフェクト</option>
+          <option value="ui">UI素材</option>
+        </select>
         <select id="searchSize" class="p-2 border rounded">
           <option value="">全てのサイズ</option>
           <option value="16">16x16</option>
@@ -85,10 +94,12 @@ export const managePageHtml = `<!DOCTYPE html>
     async function searchMapchips() {
       const tag = document.getElementById('searchTag').value;
       const size = document.getElementById('searchSize').value;
+      const category = document.getElementById('searchCategory').value;
       
       const params = new URLSearchParams();
       if (tag) params.append('tag', tag);
       if (size) params.append('size', size);
+      if (category) params.append('category', category);
       
       try {
         const res = await fetch('/api/search?' + params);
@@ -124,6 +135,20 @@ export const managePageHtml = `<!DOCTYPE html>
               \${displayImage(imageUrl, chip.size)}
               <div class="space-y-2 mt-4">
                 <p class="font-semibold">\${chip.filename}</p>
+                <div class="flex items-center gap-2">
+                  <select 
+                    class="flex-1 p-2 border rounded text-sm"
+                    onchange="updateCategory('\${chip.id}', this.value)"
+                    value="\${chip.category}"
+                  >
+                    <option value="character" \${chip.category === 'character' ? 'selected' : ''}>キャラクター</option>
+                    <option value="mapchip" \${chip.category === 'mapchip' ? 'selected' : ''}>マップチップ</option>
+                    <option value="monster" \${chip.category === 'monster' ? 'selected' : ''}>モンスター</option>
+                    <option value="item" \${chip.category === 'item' ? 'selected' : ''}>アイテム</option>
+                    <option value="effect" \${chip.category === 'effect' ? 'selected' : ''}>エフェクト</option>
+                    <option value="ui" \${chip.category === 'ui' ? 'selected' : ''}>UI素材</option>
+                  </select>
+                </div>
                 <p>サイズ: \${chip.size}x\${chip.size}</p>
                 <p>タグ: \${chip.tags || 'なし'}</p>
                 <p>フラグ: \${Object.entries(flags)
@@ -131,6 +156,15 @@ export const managePageHtml = `<!DOCTYPE html>
                   .map(([key, _]) => key)
                   .join(', ') || 'なし'}</p>
                 <div class="mt-2 space-y-2">
+                  <div class="flex items-center gap-2">
+                    <input 
+                      type="text" 
+                      value="\${chip.tags || ''}"
+                      placeholder="新しいタグ（カンマ区切り）"
+                      class="flex-1 p-2 border rounded text-sm"
+                      onchange="updateTags('\${chip.id}', this.value)"
+                    >
+                  </div>
                   <div class="flex items-center gap-2 p-2 bg-gray-100 rounded text-sm">
                     <span class="flex-1 truncate">\${imageUrl}</span>
                     <button 
@@ -177,6 +211,52 @@ export const managePageHtml = `<!DOCTYPE html>
       } catch (e) {
         console.error('Delete error:', e);
         alert('削除エラー: ' + e.message);
+      }
+    }
+
+    async function updateTags(id, newTags) {
+      try {
+        const res = await fetch(\`/api/mapchips/\${id}/tags\`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ tags: newTags })
+        });
+        const data = await res.json();
+        
+        if (!data.success) {
+          throw new Error(data.error || 'タグの更新に失敗しました');
+        }
+        
+        alert('タグを更新しました');
+        searchMapchips();
+      } catch (e) {
+        console.error('Update tags error:', e);
+        alert('タグ更新エラー: ' + e.message);
+      }
+    }
+
+    async function updateCategory(id, newCategory) {
+      try {
+        const res = await fetch(\`/api/mapchips/\${id}/category\`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ category: newCategory })
+        });
+        const data = await res.json();
+        
+        if (!data.success) {
+          throw new Error(data.error || 'カテゴリーの更新に失敗しました');
+        }
+        
+        alert('カテゴリーを更新しました');
+        searchMapchips();
+      } catch (e) {
+        console.error('Update category error:', e);
+        alert('カテゴリー更新エラー: ' + e.message);
       }
     }
   </script>

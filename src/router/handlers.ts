@@ -7,6 +7,7 @@ export async function handleUpload(request: IRequest, env: Env) {
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const size = parseInt(formData.get('size') as string);
+    const category = formData.get('category') as string;
     const tags = formData.get('tags') as string;
     const flags = formData.get('flags') as string;
     
@@ -14,8 +15,8 @@ export async function handleUpload(request: IRequest, env: Env) {
     await env.MAPCHIPS.put(id, file);
     
     await execSQL(env.DB,
-      'INSERT INTO mapchips (id, filename, size, tags, flags) VALUES (?, ?, ?, ?, ?)',
-      [id, file.name, size, tags, flags]
+      'INSERT INTO mapchips (id, filename, size, category, tags, flags) VALUES (?, ?, ?, ?, ?, ?)',
+      [id, file.name, size, category, tags, flags]
     );
     
     return new Response(JSON.stringify({ success: true, id }), { 
@@ -109,6 +110,7 @@ export async function handleSearch(request: IRequest, env: Env) {
     const { searchParams } = new URL(request.url);
     const tag = searchParams.get('tag');
     const size = searchParams.get('size');
+    const category = searchParams.get('category');
     
     let query = 'SELECT * FROM mapchips WHERE 1=1';
     const params = [];
@@ -121,6 +123,11 @@ export async function handleSearch(request: IRequest, env: Env) {
     if (size) {
       query += ' AND size = ?';
       params.push(parseInt(size));
+    }
+
+    if (category) {
+      query += ' AND category = ?';
+      params.push(category);
     }
     
     query += ' ORDER BY created_at DESC';
@@ -143,6 +150,55 @@ export async function handleSearch(request: IRequest, env: Env) {
     }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+export async function handleUpdateTags(request: IRequest, env: Env) {
+  try {
+    const { id } = request.params;
+    const { tags } = await request.json();
+    
+    await execSQL(env.DB, 'UPDATE mapchips SET tags = ? WHERE id = ?', [tags, id]);
+    
+    return new Response(JSON.stringify({ success: true }), {
+      headers: { 'Content-Type': 'application/json' }
+    });
+  } catch (e) {
+    console.error('Update tags error:', e);
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: e.message 
+    }), { 
+      status: 400,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+}
+
+export async function handleUpdateCategory(request: IRequest, env: Env) {
+  try {
+    const { id } = request.params;
+    const { category } = await request.json();
+    
+    const validCategories = ['character', 'mapchip', 'monster', 'item', 'effect', 'ui'];
+    if (!validCategories.includes(category)) {
+      throw new Error('無効なカテゴリーです');
+    }
+    
+    await execSQL(env.DB, 'UPDATE mapchips SET category = ? WHERE id = ?', [category, id]);
+    
+    return new Response(JSON.stringify({ success: true }), {
+      headers: { 'Content-Type': 'application/json' }
+    });
+  } catch (e) {
+    console.error('Update category error:', e);
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: e.message 
+    }), { 
+      status: 400,
+      headers: { 'Content-Type': 'application/json' }
     });
   }
 }
